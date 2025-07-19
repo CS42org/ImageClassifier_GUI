@@ -225,7 +225,7 @@ class ImageClassifierUI:
             ax.legend()
             ax.grid(True)
 
-        ani = FuncAnimation(fig, animate, interval=1000)
+        self._training_anim = FuncAnimation(fig, animate, interval=1000)
         canvas = FigureCanvasTkAgg(fig, master=top)
         canvas.draw()
         canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
@@ -257,6 +257,8 @@ class ImageClassifierUI:
                         data.append(im)
                         labels.append(idx)
         combined = list(zip(data, labels))
+        if not combined:
+            return np.array([]), np.array([]), class_names
         random.shuffle(combined)
         data[:], labels[:] = zip(*combined)
         return np.array(data), np.array(labels), class_names
@@ -267,6 +269,9 @@ class ImageClassifierUI:
             return
 
         X, y, self.class_names = self.load_data()
+        if len(X) == 0:
+            messagebox.showerror("Error", "No valid images found in the selected folders.")
+            return
         X = X.reshape(-1, self.img_size.get(), self.img_size.get(), 3).astype('float32')
         X_train, self.X_val, y_train, self.y_val = train_test_split(X, y, test_size=self.test_split_percent.get() / 100.0)
 
